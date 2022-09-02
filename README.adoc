@@ -1,1 +1,25 @@
 = Virtual Serial Port Router
+
+[source,sh]
+.Multiplex two virutal serial ports to a single physical serial port.
+----
+vsp-router \
+    --virtual 0 \
+    --virtual 1 \
+    --physical 2:/dev/ttyUSB0 \
+    --route 0:2 \
+    --route 1:2 \
+    --route 2:*
+----
+
+[source,sh]
+.Multiplex two virutal serial ports to a third virtual serial port.
+----
+vsp-router \
+    --virtual 0 \
+    --virtual 1 \
+    --virtual 2 \
+    --route 0:2 \
+    --route 1:2 \
+    --route 2:*
+----
