@@ -11,7 +11,8 @@ vsp-router \
     --physical 2:/dev/ttyUSB0 \
     --route 0:2 \
     --route 1:2 \
-    --route 2:*
+    --route 2:0 \
+    --route 2:1
 ----
 
 [source,sh]
@@ -23,7 +24,8 @@ vsp-router \
     --virtual 2 \
     --route 0:2 \
     --route 1:2 \
-    --route 2:*
+    --route 2:0 \
+    --route 2:1
 ----
 
 == Example
@@ -31,7 +33,14 @@ vsp-router \
 [source,sh]
 .In terminal a
 ----
-rm 0 1 2; cargo run
+rm 0 1 2; cargo run -- \
+    --virtual 0 \
+    --virtual 1 \
+    --virtual 2 \
+    --route 0:2 \
+    --route 1:2 \
+    --route 2:0 \
+    --route 2:1
 ----
 
 [source,sh]

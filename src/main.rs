@@ -1,15 +1,11 @@
 use vsp_router::Pty;
 
-use anyhow::{anyhow, Context};
-use bytes::Buf;
-use bytes::BufMut;
-use bytes::BytesMut;
-use camino::{Utf8Path, Utf8PathBuf};
+use anyhow::anyhow;
+use camino::Utf8PathBuf;
 use clap::Parser;
-use futures::stream::FuturesUnordered;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
-use tokio_stream::StreamMap;
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tokio_stream::StreamExt;
+use tokio_stream::StreamMap;
 use tokio_util::io::ReaderStream;
 use tracing::info;
 
@@ -108,12 +104,27 @@ async fn main() -> AppResult<()> {
 
     let mut routes: HashMap<String, Vec<String>> = HashMap::new();
     for route in args.routes {
-        routes.entry(route.src)
+        routes
+            .entry(route.src)
             .or_insert(Vec::new())
             .push(route.dst);
     }
     info!(?routes);
 
+    transfer(sources, sinks, routes).await?;
+
+    Ok(())
+}
+
+async fn transfer<R, W>(
+    mut sources: StreamMap<String, ReaderStream<R>>,
+    mut sinks: HashMap<String, W>,
+    routes: HashMap<String, Vec<String>>,
+) -> AppResult<()>
+where
+    R: AsyncRead + Unpin,
+    W: AsyncWrite + Unpin,
+{
     while let Some((src_id, result)) = sources.next().await {
         // TODO: Unwrap will be OK when non-routed sources are filtered
         let dst_ids = routes.get(&src_id).unwrap();
@@ -128,5 +139,5 @@ async fn main() -> AppResult<()> {
         }
     }
 
-    return Ok(());
+    Ok(())
 }
