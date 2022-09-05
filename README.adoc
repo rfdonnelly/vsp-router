@@ -1,4 +1,8 @@
-= Virtual Serial Port Router
+= Virtual Serial Port Router (vsp-router)
+
+Create virtual serial ports, connect them to physical serial ports, and create routes between them all.
+
+vsp-router was created to connect two terminal emulators to the same physical RS-232 https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html[serial console].
 
 == Use Cases
 
@@ -64,3 +68,37 @@ picocom 2
 Characters entered in terminal 0 will be sent to terminal 2 only.
 Characters entered in terminal 1 will be sent to terminal 2 only.
 Characters entered in terminal 2 will be sent to both terminals 0 and 1.
+
+== Comparison to TTYBUS
+
+vsp-router is similar to https://github.com/danielinux/ttybus[TTYBUS].
+
+The key differences is in how data is written.
+TTYBUS broadcasts data to all ports.
+vsp-router routes data to select ports.
+
+The following 3-port configurations are the equivalent.
+
+[source,sh]
+.TTYBUS
+----
+tty_bus -d -s bus
+tty_fake -d -s bus 0
+tty_fake -d -s bus 1
+tty_fake -d -s bus 2
+----
+
+[source,sh]
+.vsp-router
+----
+vsp-router \
+    --virtual 0 \
+    --virtual 1 \
+    --virtual 2 \
+    --route 0:1 \
+    --route 0:2 \
+    --route 1:0 \
+    --route 1:2 \
+    --route 2:0 \
+    --route 2:1
+----
