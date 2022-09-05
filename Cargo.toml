@@ -12,8 +12,6 @@ bytes = "1.2.1"
 camino = "1"
 clap = { version = "3", features = ["derive"] }
 futures = "0.3.24"
-libc = "0.2.132"
-nix = { version = "0.25", features = ["term"], default-features = false }
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
 tokio-serial = "5"

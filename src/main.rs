@@ -1,4 +1,4 @@
-use vsp_router::{Pty, Tty};
+use vsp_router::Pty;
 
 use anyhow::{anyhow, Context};
 use bytes::Buf;
@@ -6,7 +6,6 @@ use bytes::BufMut;
 use bytes::BytesMut;
 use clap::Parser;
 use futures::stream::FuturesUnordered;
-use futures::StreamExt;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tracing::info;
 
@@ -73,11 +72,11 @@ async fn main() -> AppResult<()> {
         info!("created route: {} -> {}", route.src, route.dst);
     }
 
-    let pty0 = Tty::new()?;
+    let pty0 = Pty::new()?;
     let pty0_link = pty0.link("0")?;
-    let pty1 = Tty::new()?;
+    let pty1 = Pty::new()?;
     let pty1_link = pty1.link("1")?;
-    let pty2 = Tty::new()?;
+    let pty2 = Pty::new()?;
     let pty2_link = pty2.link("2")?;
     let (mut pty0_rd, mut pty0_wr) = pty0.split().await;
     let (mut pty1_rd, mut pty1_wr) = pty1.split().await;
@@ -87,7 +86,7 @@ async fn main() -> AppResult<()> {
     let mut buf1 = BytesMut::with_capacity(1024);
     let mut buf2 = BytesMut::with_capacity(1024);
     loop{
-        let (dsts, mut buf) = tokio::select!{
+        let (dsts, buf) = tokio::select!{
             result = pty0_rd.read_buf(&mut buf0) => result.map(|_| (vec![&mut pty2_wr], &mut buf0)),
             result = pty1_rd.read_buf(&mut buf1) => result.map(|_| (vec![&mut pty2_wr], &mut buf1)),
             result = pty2_rd.read_buf(&mut buf2) => result.map(|_| (vec![&mut pty0_wr, &mut pty1_wr], &mut buf2)),
@@ -128,7 +127,7 @@ async fn transfer_buf(
     dst: &mut (impl AsyncWrite + Unpin),
 ) -> AppResult<()> {
     let mut buf = BytesMut::with_capacity(1024);
-    while let Ok(nbytes) = src.read_buf(&mut buf).await {
+    while let Ok(_nbytes) = src.read_buf(&mut buf).await {
         info!(?buf, remaining = buf.remaining(), remaining_mut = buf.remaining_mut(), "read data");
         dst.write_buf(&mut buf).await?;
         info!(?buf, remaining = buf.remaining(), remaining_mut = buf.remaining_mut(), "wrote data");
