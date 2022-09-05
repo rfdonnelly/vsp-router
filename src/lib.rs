@@ -1,7 +1,7 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use thiserror::Error;
-use tokio_serial::{SerialPort, SerialStream};
 use tokio::io::{ReadHalf, WriteHalf};
+use tokio_serial::{SerialPort, SerialStream};
 
 use std::fs;
 use std::os::unix;
@@ -28,13 +28,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 impl Pty {
     pub fn new() -> Result<Self> {
-        let (master, slave) = SerialStream::pair()
-            .map_err(|src| Error::Serial(src))?;
+        let (master, slave) = SerialStream::pair().map_err(|src| Error::Serial(src))?;
 
-        Ok(Self {
-            master,
-            slave,
-        })
+        Ok(Self { master, slave })
     }
 
     pub fn link<P: AsRef<Utf8Path>>(&self, path: P) -> Result<PtyLink> {
@@ -42,12 +38,10 @@ impl Pty {
         unix::fs::symlink(&self.slave.name().unwrap(), link.as_std_path())
             .map_err(|src| Error::Link(src))?;
 
-        Ok(PtyLink {
-            link,
-        })
+        Ok(PtyLink { link })
     }
 
-    pub async fn split(self) -> (ReadHalf<SerialStream>, WriteHalf<SerialStream>) {
+    pub fn split(self) -> (ReadHalf<SerialStream>, WriteHalf<SerialStream>) {
         // WORKAROUND: Prevent dropping the slave.  If we drop the slave, it closes the master and
         // reads on the master will fail.
         // TODO: Save the slave until app terminate so we can properly drop and clean it up.
