@@ -2,12 +2,20 @@
 name = "vsp-router"
 version = "0.1.0"
 edition = "2021"
+description = "Create virtual serial ports, connect them to physical serial ports, and create routes between them all."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1"
+bytes = "1.2.1"
 camino = "1"
 clap = { version = "3", features = ["derive"] }
+futures = "0.3.24"
+libc = "0.2.132"
 nix = { version = "0.25", features = ["term"], default-features = false }
 thiserror = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-serial = "5"
+tracing = "0.1"
+tracing-subscriber = "0.3"

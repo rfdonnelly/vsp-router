@@ -1,0 +1,130 @@
+= Development Log
+
+== Current State
+
+Allocated a PTY using `tokio_serial::SerialStream::pair()`.
+
+Fails on `AsyncReadExt::read_u8()` with `Error: Input/output error (os error 5)`.
+
+Why?
+
+== Things I've Tried
+
+=== Allocate a PTY using nix::pty::posix_openpt
+
+Allocated a PTY using:
+
+. posix_openpt
+. grantpt
+. unlockpt
+
+Set the termios using:
+
+. tcgetattr
+. cfmakeraw
+. tcsetattr
+
+Created a link using:
+
+. ptsname_r
+. unix::fs::symlink
+
+This all worked well.
+The problem comes after this when trying to write the file descriptor.
+
+=== Treating the PTY as a tokio::fs::File
+
+[source,rust]
+----
+let file = unsafe { File::from_raw_fd(pty_master.into_raw_fd()) };
+let (reader, writer) = tokio::io::split(file);
+----
+
+:lseek: https://man7.org/linux/man-pages/man2/lseek.2.html[`lseek(2)`].
+:notseekable: https://doc.rust-lang.org/stable/std/io/enum.ErrorKind.html#variant.NotSeekable[`std::io::ErrorKind::NotSeekable`]
+
+The problem with this is that `tokio::fs::File` assumes the file descriptor supports seeking (see {lseek}).
+
+When attempting to `AsyncWriteExit::write*()`, writes sometime fail with {notseekable}.
+
+A character device does not support seek.
+It seems that a non-seek AsyncWrite implementation is necessary.
+I.e. an AsyncWrite impl for character devices.
+
+=== Allocating a PTY using `tokio_serial::SerialStream::pair()`
+
+This allocates a master and a slave.
+I then split the master into a reader and a writer using `tokio::io::split()`.
+
+However, when I try to read `AsyncReadExt::read_u8()` from the reader, it fails with `Error: Input/output error (os error 5)`.
+
+This was due to dropping the slave which closes the slave file descriptor.
+It would be nice if the slave was never opened in the first place.
+TODO: Does `tokio_serial` open the slave?
+
+As a temporary workaround, we'll simply forget the slave to prevent dropping it.
+Ideally, we keep it around and drop it on app termination.
+
+== Things I Haven't Tried
+
+== What Does socat Do?
+
+:pty-addr: http://www.dest-unreach.org/socat/doc/socat.html#ADDRESS_PTY[PTY address type]
+
+First, some background on socat concepts is needed.
+
+Socat creates a bidirectional channel between two addresses.
+Many different address types are supported.
+We're interested in the {pty-addr}.
+
+The {pty-addr} is part of several different option groups.
+These option groups determine which socat options are applicable to the {pty-addr}.
+Socat has an option phase model.
+Each option belongs to an option phase.
+An option's phase determines when the option will be applied.
+More detail is available in the `doc/xio.help` file.
+
+Socat supports various address types.
+
+From: https://github.com/3ndG4me/socat/blob/master/xio-pty.c
+[source]
+----
+// Allocate a PTY
+ptyfd = open("/dev/ptmx", O_RDWR|O_NOCTTY, ...)
+
+// Do the PTY dance
+grantpt(ptyfd)
+unlockpt(ptyfd)
+
+// Get the PTY filename
+ptyname = ptsname(ptyfd)
+
+// Give it a user-defined filename
+symlink(name, linkname)
+
+// What do these do?
+// They seem to conditionally apply options based on socat user settings.
+// More specifically, it seems that options are configured to apply at various
+// socat-defined phases so these are applying the options that apply to the
+// PH_PASTOPEN and PH_FD phases.
+// applyopts_named "applies to filesystem entry all options belonging to phase"
+// These options result in things like chown, chmod, unlink, umask.
+
+// Apply options that are part of the NAMED option group (i.e. umask, unlink,
+// etc) for the PH_PASTOPEN and PH_FD phases.
+// PH_PASTOPEN = "past file creation/opening"
+// PH_FD = "soon after file descriptor creation or identification"
+applyopts_named(ptyname, opts, PH_PASTOPEN)
+applyopts_named(ptyname, opts, PH_FD)
+
+// "set the FD_CLOEXEC fcntl if the options do not set it to 0"
+// FD_CLOEXEC: "This flag specifies that the file descriptor should be closed when an exec function is invoked"
+// N/A because we aren't doing exec
+applyopts_cloexec(ptyfd, opts)  // See FD_CLOEXEC
+// Applies all options belonging to the PH_FD phase.
+applyopts(ptyfd, opts, PH_FD)
+----
+
+== Using nix::pty
+
+Successfully used 

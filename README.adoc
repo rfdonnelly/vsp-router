@@ -1,5 +1,7 @@
 = Virtual Serial Port Router
 
+== Use Cases
+
 [source,sh]
 .Multiplex two virutal serial ports to a single physical serial port.
 ----
@@ -23,3 +25,33 @@ vsp-router \
     --route 1:2 \
     --route 2:*
 ----
+
+== Example
+
+[source,sh]
+.In terminal a
+----
+rm 0 1 2; cargo run
+----
+
+[source,sh]
+.In terminal 0
+----
+picocom 0
+----
+
+[source,sh]
+.In terminal 1
+----
+picocom 1
+----
+
+[source,sh]
+.In terminal 2
+----
+picocom 2
+----
+
+Characters entered in terminal 0 will be sent to terminal 2 only.
+Characters entered in terminal 1 will be sent to terminal 2 only.
+Characters entered in terminal 2 will be sent to both terminals 0 and 1.
