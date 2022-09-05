@@ -4,6 +4,15 @@ Create virtual serial ports, connect them to physical serial ports, and create r
 
 vsp-router was created to connect two terminal emulators to the same physical RS-232 https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html[serial console].
 
+== TODO
+
+* [x] Support virtual serial ports
+* [ ] Support physical serial ports
+* [x] Support routes
+* [ ] Validate routes
+* [ ] Graceful termination (close file descriptors, unlink links)
+* [ ] Improve documentation
+
 == Use Cases
 
 [source,sh]
