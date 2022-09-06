@@ -1,13 +1,5 @@
 = Development Log
 
-== Current State
-
-Allocated a PTY using `tokio_serial::SerialStream::pair()`.
-
-Fails on `AsyncReadExt::read_u8()` with `Error: Input/output error (os error 5)`.
-
-Why?
-
 == Things I've Tried
 
 === Allocate a PTY using nix::pty::posix_openpt
@@ -62,10 +54,15 @@ This was due to dropping the slave which closes the slave file descriptor.
 It would be nice if the slave was never opened in the first place.
 TODO: Does `tokio_serial` open the slave?
 
-As a temporary workaround, we'll simply forget the slave to prevent dropping it.
+As a temporary workaround, we'll simply `std::mem::forget()` the slave to prevent dropping it.
 Ideally, we keep it around and drop it on app termination.
 
-== Things I Haven't Tried
+=== Don't Forget
+
+I fixed and removed the `std::mem::forget()`.
+Now, I keep the subordinate SerialStream around until the end of the program and allow `drop()` to get called.
+However, the Rust compiler complained about the binding saying it was never read.
+To workaround this I had to prefix the binding with a `_`.
 
 == What Does socat Do?
 
