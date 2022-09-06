@@ -49,7 +49,7 @@ vsp-router \
 [source,sh]
 .In terminal a
 ----
-rm 0 1 2; cargo run -- \
+cargo run -- \
     --virtual 0 \
     --virtual 1 \
     --virtual 2 \

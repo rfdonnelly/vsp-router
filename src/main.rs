@@ -7,6 +7,7 @@ use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tokio_stream::StreamExt;
 use tokio_stream::StreamMap;
 use tokio_util::io::ReaderStream;
+use tokio_util::sync::CancellationToken;
 use tracing::info;
 
 use std::collections::HashMap;
@@ -111,33 +112,52 @@ async fn main() -> AppResult<()> {
     }
     info!(?routes);
 
-    transfer(sources, sinks, routes).await?;
+    let shutdown_token = CancellationToken::new();
+    let join_handle = tokio::spawn(transfer(sources, sinks, routes, shutdown_token.clone()));
+
+    tokio::signal::ctrl_c().await?;
+    info!("received ctrl-c");
+    shutdown_token.cancel();
+    info!("waiting for graceful shutdown");
+    join_handle.await??;
 
     Ok(())
 }
 
+#[tracing::instrument(skip_all)]
 async fn transfer<R, W>(
     mut sources: StreamMap<String, ReaderStream<R>>,
     mut sinks: HashMap<String, W>,
     routes: HashMap<String, Vec<String>>,
+    shutdown_token: CancellationToken,
 ) -> AppResult<()>
 where
     R: AsyncRead + Unpin,
     W: AsyncWrite + Unpin,
 {
-    while let Some((src_id, result)) = sources.next().await {
-        // TODO: Unwrap will be OK when non-routed sources are filtered
-        let dst_ids = routes.get(&src_id).unwrap();
-        let bytes = result?;
-        info!(?src_id, ?dst_ids, ?bytes, "read");
-        for dst_id in dst_ids {
-            // TODO: Unwrap will be OK when IDs in routes are validated
-            let dst = sinks.get_mut(dst_id).unwrap();
-            let mut buf = bytes.clone();
-            dst.write_all_buf(&mut buf).await?;
-            info!(?dst_id, ?bytes, "wrote");
+    loop {
+        tokio::select! {
+            next = sources.next() => {
+                match next {
+                    None => return Err(anyhow!("channel closed")),
+                    Some((src_id, result)) => {
+                        // TODO: Unwrap will be OK when non-routed sources are filtered
+                        let dst_ids = routes.get(&src_id).unwrap();
+                        let bytes = result?;
+                        info!(?src_id, ?dst_ids, ?bytes, "read");
+                        for dst_id in dst_ids {
+                            // TODO: Unwrap will be OK when IDs in routes are validated
+                            let dst = sinks.get_mut(dst_id).unwrap();
+                            let mut buf = bytes.clone();
+                            dst.write_all_buf(&mut buf).await?;
+                            info!(?dst_id, ?bytes, "wrote");
+                        }
+                    }
+                }
+            }
+            _ = shutdown_token.cancelled() => {
+                return Ok(());
+            }
         }
     }
-
-    Ok(())
 }
