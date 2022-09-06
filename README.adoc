@@ -13,7 +13,7 @@ image::https://asciinema.org/a/519137.svg[asciicast]
 * [ ] Support physical serial ports
 * [x] Support routes
 * [ ] Validate routes
-* [ ] Graceful termination (close file descriptors, unlink links)
+* [x] Graceful termination (close file descriptors, unlink links)
 * [ ] Improve documentation
 
 == Use Cases

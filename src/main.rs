@@ -1,4 +1,4 @@
-use vsp_router::Pty;
+use vsp_router::create_virtual_serial_port;
 
 use anyhow::anyhow;
 use camino::Utf8PathBuf;
@@ -91,9 +91,8 @@ async fn main() -> AppResult<()> {
     let mut sinks = HashMap::new();
     let mut links = Vec::new();
     for id_path in args.virtuals {
-        let pty = Pty::new()?;
-        let link = pty.link(&id_path.path)?;
-        let (reader, writer) = pty.split();
+        let (manager, link) = create_virtual_serial_port(&id_path.path)?;
+        let (reader, writer) = tokio::io::split(manager);
         sources.insert(id_path.id.clone(), ReaderStream::new(reader));
         sinks.insert(id_path.id.clone(), writer);
         links.push(link);

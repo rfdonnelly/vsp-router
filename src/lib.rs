@@ -1,6 +1,5 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use thiserror::Error;
-use tokio::io::{ReadHalf, WriteHalf};
 use tokio_serial::{SerialPort, SerialStream};
 
 use std::fs;
@@ -15,42 +14,38 @@ pub enum Error {
     Serial(#[source] tokio_serial::Error),
 }
 
-pub struct Pty {
-    master: SerialStream,
-    slave: SerialStream,
-}
-
 pub struct PtyLink {
+    // Not used directly but need to keep around to prevent early close of the file descriptor.
+    //
+    // tokio_serial::SerialStream includes a mio_serial::SerialStream which includes a
+    // serialport::TTY which includes a Drop impl that closes the file descriptor.
+    _subordinate: SerialStream,
     link: Utf8PathBuf,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl Pty {
-    pub fn new() -> Result<Self> {
-        let (master, slave) = SerialStream::pair().map_err(|src| Error::Serial(src))?;
+pub fn create_virtual_serial_port<P>(
+    path: P
+) -> Result<(SerialStream, PtyLink)>
+where
+    P: AsRef<Utf8Path>
+{
+    let (manager, subordinate) = SerialStream::pair().map_err(|src| Error::Serial(src))?;
+    let link = PtyLink::new(subordinate, path)?;
 
-        Ok(Self { master, slave })
-    }
-
-    pub fn link<P: AsRef<Utf8Path>>(&self, path: P) -> Result<PtyLink> {
-        let link = path.as_ref().to_path_buf();
-        unix::fs::symlink(&self.slave.name().unwrap(), link.as_std_path())
-            .map_err(|src| Error::Link(src))?;
-
-        Ok(PtyLink { link })
-    }
-
-    pub fn split(self) -> (ReadHalf<SerialStream>, WriteHalf<SerialStream>) {
-        // WORKAROUND: Prevent dropping the slave.  If we drop the slave, it closes the master and
-        // reads on the master will fail.
-        // TODO: Save the slave until app terminate so we can properly drop and clean it up.
-        std::mem::forget(self.slave);
-        tokio::io::split(self.master)
-    }
+    Ok((manager, link))
 }
 
 impl PtyLink {
+    fn new<P: AsRef<Utf8Path>>(subordinate: SerialStream, path: P) -> Result<Self> {
+        let link = path.as_ref().to_path_buf();
+        unix::fs::symlink(&subordinate.name().unwrap(), link.as_std_path())
+            .map_err(|src| Error::Link(src))?;
+
+        Ok(PtyLink { _subordinate: subordinate, link })
+    }
+
     pub fn link(&self) -> &Utf8Path {
         &self.link.as_path()
     }
