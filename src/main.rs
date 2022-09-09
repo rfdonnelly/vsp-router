@@ -22,7 +22,7 @@ struct Args {
     /// Create a virtual serial port node.  Can use multiple times to create multiple virtual
     /// serial ports.
     #[clap(long = "virtual", id = "VIRTUAL")]
-    virtuals: Vec<IdPath>,
+    virtuals: Vec<Virtual>,
 
     /// Create a route between a source node and a destination node in the form of
     /// '<src-id>:<dst-id>'.  Can use multiple times to create multiple routes.
@@ -36,12 +36,12 @@ struct Args {
 }
 
 #[derive(Clone, Debug)]
-struct IdPath {
+struct Virtual {
     id: String,
     path: Utf8PathBuf,
 }
 
-impl FromStr for IdPath {
+impl FromStr for Virtual {
     type Err = AppError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
