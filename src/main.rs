@@ -18,14 +18,38 @@ type AppResult<T> = anyhow::Result<T>;
 #[derive(Parser)]
 #[clap(author, version, about)]
 struct Args {
-    /// Create a virtual serial port node.  Can use multiple times to create multiple virtual
-    /// serial ports.
-    #[clap(long = "virtual", id = "VIRTUAL")]
+    /// Create a virtual serial port.
+    ///
+    /// The argument takes the following form: '[<id>:]<path>'
+    ///
+    /// If no ID is specified, the ID is set to the basename of the path.
+    ///
+    /// Can use multiple times to create multiple virtual serial ports.
+    ///
+    /// Examples:
+    ///
+    /// --virtual path/to/file
+    ///
+    ///     The path is 'path/to/file' and the ID is 'file'.
+    ///
+    /// --virtual 0:dev/ttyUSB0
+    ///
+    ///     The path is '/dev/ttyUSB0' and the ID is '0'.
+    #[clap(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
     virtuals: Vec<Virtual>,
 
-    /// Create a route between a source node and a destination node in the form of
-    /// '<src-id>:<dst-id>'.  Can use multiple times to create multiple routes.
-    #[clap(long = "route", id = "ROUTE")]
+    /// Create a route between a source port and a destination port.
+    ///
+    /// The argument takes the following form: '<src-id>:<dst-id>'
+    ///
+    /// Can use multiple times to create multiple routes.
+    ///
+    /// Examples:
+    ///
+    /// --virtual 0:1
+    ///
+    ///     The source ID is '0' and the destination ID is '1'.
+    #[clap(long = "route", id = "ROUTE", verbatim_doc_comment)]
     routes: Vec<Route>,
 
     /// Create a node attached to a physical serial port.  Can use multiple times to attached
