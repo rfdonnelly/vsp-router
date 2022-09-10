@@ -58,7 +58,7 @@ async fn main() -> AppResult<()> {
     info!(?routes);
 
     let shutdown_token = CancellationToken::new();
-    let join_handle = tokio::spawn(transfer(sources, sinks, routes, shutdown_token.clone()));
+    let shutdown_token_clone = shutdown_token.clone();
 
     tokio::spawn(async move {
         match tokio::signal::ctrl_c().await {
@@ -70,7 +70,7 @@ async fn main() -> AppResult<()> {
         info!("waiting for graceful shutdown");
     });
 
-    join_handle.await??;
+    transfer(sources, sinks, routes, shutdown_token_clone).await?;
 
     Ok(())
 }
