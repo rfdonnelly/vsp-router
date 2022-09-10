@@ -16,8 +16,28 @@ use std::str::FromStr;
 type AppError = anyhow::Error;
 type AppResult<T> = anyhow::Result<T>;
 
+const CLAP_AFTER_HELP: &str = "
+EXAMPLES:
+
+    Share a physical serial port with two virtual serial ports.
+
+    Data sent from virtual serial port 0 is sent to the physical serial port but not to virtual
+    serial port 1.  Similarly, data sent from virtual serial port 1 is sent to the physical serial
+    port but not to virtual serial port 0.  Data received fromt the physical serial port is sent to
+    both virtual serial ports.
+
+    vsp-router \\
+        --virtual 0 \\
+        --virtual 1 \\
+        --physical 2:/dev/ttyUSB0,115200 \\
+        --route 0:2 \\
+        --route 1:2 \\
+        --route 2:0 \\
+        --route 2:1
+";
+
 #[derive(Parser)]
-#[clap(author, version, about)]
+#[clap(author, version, about, after_help = CLAP_AFTER_HELP)]
 struct Args {
     /// Create a virtual serial port.
     ///
