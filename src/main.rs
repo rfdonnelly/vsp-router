@@ -44,7 +44,6 @@ async fn main() -> AppResult<()> {
         sinks.insert(physical.id.clone(), writer);
     }
 
-    // TODO: Don't include non-routed sources
     // TODO: Warn on non-routed sources
     // TODO: Validate IDs in routes
 
@@ -89,20 +88,16 @@ where
     loop {
         tokio::select! {
             next = sources.next() => {
-                match next {
-                    None => return Err(anyhow!("channel closed")),
-                    Some((src_id, result)) => {
-                        // TODO: Unwrap will be OK when non-routed sources are filtered
-                        let dst_ids = routes.get(&src_id).unwrap();
-                        let bytes = result?;
-                        info!(?src_id, ?dst_ids, ?bytes, "read");
-                        for dst_id in dst_ids {
-                            // TODO: Unwrap will be OK when IDs in routes are validated
-                            let dst = sinks.get_mut(dst_id).unwrap();
-                            let mut buf = bytes.clone();
-                            dst.write_all_buf(&mut buf).await?;
-                            info!(?dst_id, ?bytes, "wrote");
-                        }
+                let (src_id, result) = next.ok_or_else(|| anyhow!("serial port closed"))?;
+                if let Some(dst_ids) = routes.get(&src_id) {
+                    let bytes = result?;
+                    info!(?src_id, ?dst_ids, ?bytes, "read");
+                    for dst_id in dst_ids {
+                        // TODO: Unwrap will be OK when IDs in routes are validated
+                        let dst = sinks.get_mut(dst_id).unwrap();
+                        let mut buf = bytes.clone();
+                        dst.write_all_buf(&mut buf).await?;
+                        info!(?dst_id, ?bytes, "wrote");
                     }
                 }
             }
