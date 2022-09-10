@@ -4,6 +4,7 @@ use anyhow::anyhow;
 use camino::Utf8PathBuf;
 use clap::Parser;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
+use tokio_serial::SerialPortBuilderExt;
 use tokio_stream::{StreamExt, StreamMap};
 use tokio_util::io::ReaderStream;
 use tokio_util::sync::CancellationToken;
@@ -52,10 +53,30 @@ struct Args {
     #[clap(long = "route", id = "ROUTE", verbatim_doc_comment)]
     routes: Vec<Route>,
 
-    /// Create a node attached to a physical serial port.  Can use multiple times to attached
-    /// multiple physical serial ports.
-    #[clap(long = "physical", id = "PHYSICAL")]
-    physicals: Vec<String>,
+    /// Open a physical serial port.
+    ///
+    /// The argument takes the following form: '[<id>:]<path>[,<baud-rate>]'
+    ///
+    /// If ID is not specified, the ID is set to the basename of the path. If baud rate is not
+    /// specificed, the baud rate defaults to 9600.
+    ///
+    /// Can use multiple times to attached multiple physical serial ports.
+    ///
+    /// Examples:
+    ///
+    /// --physical /dev/ttyUSB0
+    ///
+    ///     The path is '/dev/ttyUSB0', the ID is 'ttyUSB0', and the baud rate is 9600.
+    ///
+    /// --physical 1:/dev/ttyUSB0
+    ///
+    ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 9600.
+    ///
+    /// --physical 1:/dev/ttyUSB0,115200
+    ///
+    ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 115200.
+    #[clap(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
+    physicals: Vec<Physical>,
 }
 
 #[derive(Clone, Debug)]
@@ -104,6 +125,35 @@ impl FromStr for Route {
     }
 }
 
+#[derive(Clone, Debug)]
+struct Physical {
+    id: String,
+    path: Utf8PathBuf,
+    baud_rate: u32,
+}
+
+impl FromStr for Physical {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (remainder, baud_rate) = match s.split_once(',') {
+            None => (s, 9600),
+            Some((remainder, baud_rate)) => {
+                let baud_rate = baud_rate.parse()?;
+                (remainder, baud_rate)
+            }
+        };
+
+        let id_path = Virtual::from_str(remainder)?;
+
+        Ok(Physical {
+            id: id_path.id,
+            path: id_path.path,
+            baud_rate,
+        })
+    }
+}
+
 #[tokio::main]
 async fn main() -> AppResult<()> {
     tracing_subscriber::fmt::init();
@@ -120,6 +170,13 @@ async fn main() -> AppResult<()> {
         sources.insert(virtual_.id.clone(), ReaderStream::new(reader));
         sinks.insert(virtual_.id.clone(), writer);
         links.push(link);
+    }
+
+    for physical in args.physicals {
+        let port = tokio_serial::new(physical.path.as_str(), physical.baud_rate).open_native_async()?;
+        let (reader, writer) = tokio::io::split(port);
+        sources.insert(physical.id.clone(), ReaderStream::new(reader));
+        sinks.insert(physical.id.clone(), writer);
     }
 
     // TODO: Don't include non-routed sources
