@@ -1,30 +1,10 @@
 use crate::AppError;
 
 use anyhow::anyhow;
-use clap::Parser;
 use camino::Utf8PathBuf;
+use clap::Parser;
 
 use std::str::FromStr;
-
-const CLAP_AFTER_HELP: &str = "
-EXAMPLES:
-
-    Share a physical serial port with two virtual serial ports.
-
-    Data sent from virtual serial port 0 is sent to the physical serial port but not to virtual
-    serial port 1.  Similarly, data sent from virtual serial port 1 is sent to the physical serial
-    port but not to virtual serial port 0.  Data received fromt the physical serial port is sent to
-    both virtual serial ports.
-
-    vsp-router \\
-        --virtual 0 \\
-        --virtual 1 \\
-        --physical 2:/dev/ttyUSB0,115200 \\
-        --route 0:2 \\
-        --route 1:2 \\
-        --route 2:0 \\
-        --route 2:1
-";
 
 #[derive(Parser)]
 #[clap(author, version, about, after_help = CLAP_AFTER_HELP)]
@@ -48,20 +28,6 @@ pub(crate) struct Args {
     ///     The path is '/dev/ttyUSB0' and the ID is '0'.
     #[clap(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
     pub(crate) virtuals: Vec<Virtual>,
-
-    /// Create a route between a source port and a destination port.
-    ///
-    /// The argument takes the following form: '<src-id>:<dst-id>'
-    ///
-    /// Can use multiple times to create multiple routes.
-    ///
-    /// Examples:
-    ///
-    /// --virtual 0:1
-    ///
-    ///     The source ID is '0' and the destination ID is '1'.
-    #[clap(long = "route", id = "ROUTE", verbatim_doc_comment)]
-    pub(crate) routes: Vec<Route>,
 
     /// Open a physical serial port.
     ///
@@ -87,12 +53,59 @@ pub(crate) struct Args {
     ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 115200.
     #[clap(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
     pub(crate) physicals: Vec<Physical>,
+
+    /// Create a route between a source port and a destination port.
+    ///
+    /// The argument takes the following form: '<src-id>:<dst-id>'
+    ///
+    /// Can use multiple times to create multiple routes.
+    ///
+    /// Examples:
+    ///
+    /// --virtual 0:1
+    ///
+    ///     The source ID is '0' and the destination ID is '1'.
+    #[clap(long = "route", id = "ROUTE", verbatim_doc_comment)]
+    pub(crate) routes: Vec<Route>,
 }
+
+const CLAP_AFTER_HELP: &str = "
+EXAMPLES:
+
+    Share a physical serial port with two virtual serial ports.
+
+    Data sent from virtual serial port 0 is sent to the physical serial port but not to virtual
+    serial port 1.  Similarly, data sent from virtual serial port 1 is sent to the physical serial
+    port but not to virtual serial port 0.  Data received fromt the physical serial port is sent to
+    both virtual serial ports.
+
+    vsp-router \\
+        --virtual 0 \\
+        --virtual 1 \\
+        --physical 2:/dev/ttyUSB0,115200 \\
+        --route 0:2 \\
+        --route 1:2 \\
+        --route 2:0 \\
+        --route 2:1
+";
 
 #[derive(Clone, Debug)]
 pub(crate) struct Virtual {
     pub(crate) id: String,
     pub(crate) path: Utf8PathBuf,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct Physical {
+    pub(crate) id: String,
+    pub(crate) path: Utf8PathBuf,
+    pub(crate) baud_rate: u32,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct Route {
+    pub(crate) src: String,
+    pub(crate) dst: String,
 }
 
 impl FromStr for Virtual {
@@ -117,31 +130,6 @@ impl FromStr for Virtual {
     }
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct Route {
-    pub(crate) src: String,
-    pub(crate) dst: String,
-}
-
-impl FromStr for Route {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (src, dst) = s.split_once(':').ok_or(anyhow!("invalid route '{s}'"))?;
-        Ok(Self {
-            src: src.to_string(),
-            dst: dst.to_string(),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub(crate) struct Physical {
-    pub(crate) id: String,
-    pub(crate) path: Utf8PathBuf,
-    pub(crate) baud_rate: u32,
-}
-
 impl FromStr for Physical {
     type Err = AppError;
 
@@ -164,3 +152,14 @@ impl FromStr for Physical {
     }
 }
 
+impl FromStr for Route {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (src, dst) = s.split_once(':').ok_or(anyhow!("invalid route '{s}'"))?;
+        Ok(Self {
+            src: src.to_string(),
+            dst: dst.to_string(),
+        })
+    }
+}

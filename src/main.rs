@@ -1,7 +1,8 @@
-use vsp_router::create_virtual_serial_port;
-
 mod cli;
+
 use crate::cli::Args;
+
+use vsp_router::create_virtual_serial_port;
 
 use anyhow::anyhow;
 use clap::Parser;
@@ -36,7 +37,8 @@ async fn main() -> AppResult<()> {
     }
 
     for physical in args.physicals {
-        let port = tokio_serial::new(physical.path.as_str(), physical.baud_rate).open_native_async()?;
+        let port =
+            tokio_serial::new(physical.path.as_str(), physical.baud_rate).open_native_async()?;
         let (reader, writer) = tokio::io::split(port);
         sources.insert(physical.id.clone(), ReaderStream::new(reader));
         sinks.insert(physical.id.clone(), writer);
