@@ -11,7 +11,7 @@ use tokio_serial::SerialPortBuilderExt;
 use tokio_stream::{StreamExt, StreamMap};
 use tokio_util::io::ReaderStream;
 use tokio_util::sync::CancellationToken;
-use tracing::info;
+use tracing::{error, info};
 
 use std::collections::HashMap;
 
@@ -60,11 +60,16 @@ async fn main() -> AppResult<()> {
     let shutdown_token = CancellationToken::new();
     let join_handle = tokio::spawn(transfer(sources, sinks, routes, shutdown_token.clone()));
 
-    // TODO: Fix case where transfer() returns an error but we still wait on ctrl-c
-    tokio::signal::ctrl_c().await?;
-    info!("received ctrl-c");
-    shutdown_token.cancel();
-    info!("waiting for graceful shutdown");
+    tokio::spawn(async move {
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => info!("received ctrl-c, shutting down"),
+            Err(e) => error!(?e, "unable to listen for shutdown signal"),
+        }
+
+        shutdown_token.cancel();
+        info!("waiting for graceful shutdown");
+    });
+
     join_handle.await??;
 
     Ok(())
