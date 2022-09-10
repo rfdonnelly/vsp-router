@@ -4,8 +4,7 @@ use anyhow::anyhow;
 use camino::Utf8PathBuf;
 use clap::Parser;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
-use tokio_stream::StreamExt;
-use tokio_stream::StreamMap;
+use tokio_stream::{StreamExt, StreamMap};
 use tokio_util::io::ReaderStream;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
@@ -90,11 +89,12 @@ async fn main() -> AppResult<()> {
     let mut sources = StreamMap::new();
     let mut sinks = HashMap::new();
     let mut links = Vec::new();
-    for id_path in args.virtuals {
-        let (manager, link) = create_virtual_serial_port(&id_path.path)?;
-        let (reader, writer) = tokio::io::split(manager);
-        sources.insert(id_path.id.clone(), ReaderStream::new(reader));
-        sinks.insert(id_path.id.clone(), writer);
+
+    for virtual_ in args.virtuals {
+        let (port, link) = create_virtual_serial_port(&virtual_.path)?;
+        let (reader, writer) = tokio::io::split(port);
+        sources.insert(virtual_.id.clone(), ReaderStream::new(reader));
+        sinks.insert(virtual_.id.clone(), writer);
         links.push(link);
     }
 
