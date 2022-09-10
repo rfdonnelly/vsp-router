@@ -12,7 +12,7 @@ image::https://asciinema.org/a/519137.svg[asciicast]
 * [x] Support virtual serial ports
 * [x] Support physical serial ports
 * [x] Support routes
-* [ ] Validate routes
+* [x] Validate routes
 * [x] Graceful termination (close file descriptors, unlink links)
 * [ ] Improve documentation
 

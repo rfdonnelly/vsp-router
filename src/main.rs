@@ -23,6 +23,8 @@ async fn main() -> AppResult<()> {
     tracing_subscriber::fmt::init();
 
     let args = Args::parse();
+    args.validate()?;
+    // TODO: Warn on non-routed sources
 
     let mut sources = StreamMap::new();
     let mut sinks = HashMap::new();
@@ -43,9 +45,6 @@ async fn main() -> AppResult<()> {
         sources.insert(physical.id.clone(), ReaderStream::new(reader));
         sinks.insert(physical.id.clone(), writer);
     }
-
-    // TODO: Warn on non-routed sources
-    // TODO: Validate IDs in routes
 
     let mut routes: HashMap<String, Vec<String>> = HashMap::new();
     for route in args.routes {
@@ -93,7 +92,8 @@ where
                     let bytes = result?;
                     info!(?src_id, ?dst_ids, ?bytes, "read");
                     for dst_id in dst_ids {
-                        // TODO: Unwrap will be OK when IDs in routes are validated
+                        // This unwrap is OK as long as we validate all route IDs exist first
+                        // Route IDs are validated in Args::check_route_ids()
                         let dst = sinks.get_mut(dst_id).unwrap();
                         let mut buf = bytes.clone();
                         dst.write_all_buf(&mut buf).await?;
