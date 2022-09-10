@@ -25,11 +25,9 @@ pub struct PtyLink {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub fn create_virtual_serial_port<P>(
-    path: P
-) -> Result<(SerialStream, PtyLink)>
+pub fn create_virtual_serial_port<P>(path: P) -> Result<(SerialStream, PtyLink)>
 where
-    P: AsRef<Utf8Path>
+    P: AsRef<Utf8Path>,
 {
     let (manager, subordinate) = SerialStream::pair().map_err(|src| Error::Serial(src))?;
     let link = PtyLink::new(subordinate, path)?;
@@ -43,7 +41,10 @@ impl PtyLink {
         unix::fs::symlink(&subordinate.name().unwrap(), link.as_std_path())
             .map_err(|src| Error::Link(src))?;
 
-        Ok(PtyLink { _subordinate: subordinate, link })
+        Ok(PtyLink {
+            _subordinate: subordinate,
+            link,
+        })
     }
 
     pub fn link(&self) -> &Utf8Path {
