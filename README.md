@@ -5,7 +5,7 @@
 
 Create virtual serial ports, connect them to physical serial ports, and create routes between them all.
 
-vsp-router was created to connect two terminal emulators to the same physical RS-232 https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html[serial console].
+vsp-router was created to connect two terminal emulators to the same physical RS-232 [serial console](https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html).
 
 [![asciicast](https://asciinema.org/a/519137.svg)](https://asciinema.org/a/519137)
 
@@ -76,7 +76,7 @@ Characters entered in terminal 2 will be sent to both terminals 0 and 1.
 
 ## Comparison to TTYBUS
 
-vsp-router is similar to https://github.com/danielinux/ttybus[TTYBUS].
+vsp-router is similar to [TTYBUS](https://github.com/danielinux/ttybus).
 
 The key differences is in how data is written.
 TTYBUS broadcasts data to all ports.
