@@ -127,3 +127,21 @@ Vsp-router supports two: virtual serial ports and physical serial ports.
 
 Vsp-router could be combined with socat to enable interesting use cases.
 For example, vsp-router could be used to snoop a physical serial port and paired with socat to send the snooped data over UDP.
+
+== License
+
+Licensed under either of
+
+* Apache License, Version 2.0
++
+(link:LICENSE-APACHE[LICENSE-APACHE] or http://www.apache.org/licenses/LICENSE-2.0)
+
+* MIT license
++
+(link:LICENSE-MIT[LICENSE-MIT] or http://opensource.org/licenses/MIT)
+
+at your option.
+
+== Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

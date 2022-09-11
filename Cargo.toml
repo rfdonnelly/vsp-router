@@ -3,19 +3,22 @@ name = "vsp-router"
 version = "0.1.0"
 edition = "2021"
 description = "Create virtual serial ports, connect them to physical serial ports, and create routes between them all."
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = "Rob Donnelly"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rfdonnelly/vsp-router"
+keywords = ["serial", "socat", "ttybus", "virtual", "router"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1"
-bytes = "1.2.1"
+bytes = "1"
 camino = "1"
 clap = { version = "3", features = ["derive"] }
-futures = "0.3.24"
+futures = "0.3"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
 tokio-serial = "5"
-tokio-stream = "0.1.9"
-tokio-util = { version = "0.7.3", features = ["io"] }
+tokio-stream = "0.1"
+tokio-util = { version = "0.7", features = ["io"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
