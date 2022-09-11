@@ -1,29 +1,19 @@
-= Virtual Serial Port Router (vsp-router)
+# Virtual Serial Port Router (vsp-router)
 
-[link=https://github.com/rfdonnelly/vsp-router/actions/workflows/ci.yml]
-image::https://github.com/rfdonnelly/vsp-router/actions/workflows/ci.yml/badge.svg[Continuous integration]
+[![Build status](https://github.com/rfdonnelly/vsp-router/workflows/ci/badge.svg)](https://github.com/rfdonnelly/vsp-router/actions)
+[![Crates.io](https://img.shields.io/crates/v/vsp-router.svg)](https://crates.io/crates/vsp-router)
 
 Create virtual serial ports, connect them to physical serial ports, and create routes between them all.
 
 vsp-router was created to connect two terminal emulators to the same physical RS-232 https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html[serial console].
 
-[link=https://asciinema.org/a/519137]
-image::https://asciinema.org/a/519137.svg[asciicast]
+[![asciicast](https://asciinema.org/a/519137.svg)](https://asciinema.org/a/519137)
 
-== TODO
+## Use Cases
 
-* [x] Support virtual serial ports
-* [x] Support physical serial ports
-* [x] Support routes
-* [x] Validate routes
-* [x] Graceful termination (close file descriptors, unlink links)
-* [ ] Improve documentation
+Multiplex two virutal serial ports to a single physical serial port.
 
-== Use Cases
-
-[source,sh]
-.Multiplex two virutal serial ports to a single physical serial port.
-----
+```sh
 vsp-router \
     --virtual 0 \
     --virtual 1 \
@@ -32,11 +22,11 @@ vsp-router \
     --route 1:2 \
     --route 2:0 \
     --route 2:1
-----
+```
 
-[source,sh]
-.Multiplex two virutal serial ports to a third virtual serial port.
-----
+Multiplex two virutal serial ports to a third virtual serial port.
+
+```sh
 vsp-router \
     --virtual 0 \
     --virtual 1 \
@@ -45,13 +35,13 @@ vsp-router \
     --route 1:2 \
     --route 2:0 \
     --route 2:1
-----
+```
 
-== Example
+## Example
 
-[source,sh]
-.In terminal a
-----
+In terminal A
+
+```sh
 cargo run -- \
     --virtual 0 \
     --virtual 1 \
@@ -60,31 +50,31 @@ cargo run -- \
     --route 1:2 \
     --route 2:0 \
     --route 2:1
-----
+```
 
-[source,sh]
-.In terminal 0
-----
+In terminal 0
+
+```sh
 picocom 0
-----
+```
 
-[source,sh]
-.In terminal 1
-----
+In terminal 1
+
+```sh
 picocom 1
-----
+```
 
-[source,sh]
-.In terminal 2
-----
+In terminal 2
+
+```sh
 picocom 2
-----
+```
 
 Characters entered in terminal 0 will be sent to terminal 2 only.
 Characters entered in terminal 1 will be sent to terminal 2 only.
 Characters entered in terminal 2 will be sent to both terminals 0 and 1.
 
-== Comparison to TTYBUS
+## Comparison to TTYBUS
 
 vsp-router is similar to https://github.com/danielinux/ttybus[TTYBUS].
 
@@ -94,18 +84,18 @@ vsp-router routes data to select ports.
 
 The following 3-port configurations are the equivalent.
 
-[source,sh]
-.TTYBUS
-----
+TTYBUS
+
+```sh
 tty_bus -d -s bus
 tty_fake -d -s bus 0
 tty_fake -d -s bus 1
 tty_fake -d -s bus 2
-----
+```
 
-[source,sh]
-.vsp-router
-----
+vsp-router
+
+```sh
 vsp-router \
     --virtual 0 \
     --virtual 1 \
@@ -116,9 +106,9 @@ vsp-router \
     --route 1:2 \
     --route 2:0 \
     --route 2:1
-----
+```
 
-== Comparison to socat
+## Comparison to socat
 
 Socat establishes a bidirectional channel between two end points.
 Vsp-router establishes a multi-directional channel between N end points.
@@ -128,20 +118,17 @@ Vsp-router supports two: virtual serial ports and physical serial ports.
 Vsp-router could be combined with socat to enable interesting use cases.
 For example, vsp-router could be used to snoop a physical serial port and paired with socat to send the snooped data over UDP.
 
-== License
+## License
 
 Licensed under either of
 
-* Apache License, Version 2.0
-+
-(link:LICENSE-APACHE[LICENSE-APACHE] or http://www.apache.org/licenses/LICENSE-2.0)
-
-* MIT license
-+
-(link:LICENSE-MIT[LICENSE-MIT] or http://opensource.org/licenses/MIT)
+ * Apache License, Version 2.0
+   ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license
+   ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
 
-== Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
