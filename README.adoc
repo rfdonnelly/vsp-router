@@ -1,5 +1,8 @@
 = Virtual Serial Port Router (vsp-router)
 
+[link=https://github.com/rfdonnelly/vsp-router/actions/workflows/ci.yml]
+image::https://github.com/rfdonnelly/vsp-router/actions/workflows/ci.yml/badge.svg[Continuous integration]
+
 Create virtual serial ports, connect them to physical serial ports, and create routes between them all.
 
 vsp-router was created to connect two terminal emulators to the same physical RS-232 https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html[serial console].
