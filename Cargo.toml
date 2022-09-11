@@ -9,6 +9,9 @@ repository = "https://github.com/rfdonnelly/vsp-router"
 keywords = ["serial", "socat", "ttybus", "virtual", "router"]
 categories = ["command-line-utilities"]
 
+[profile.release]
+strip = true
+
 [dependencies]
 anyhow = "1"
 bytes = "1"
