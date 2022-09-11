@@ -114,3 +114,13 @@ vsp-router \
     --route 2:0 \
     --route 2:1
 ----
+
+== Comparison to socat
+
+Socat establishes a bidirectional channel between two end points.
+Vsp-router establishes a multi-directional channel between N end points.
+Socat supports several different types of end points.
+Vsp-router supports two: virtual serial ports and physical serial ports.
+
+Vsp-router could be combined with socat to enable interesting use cases.
+For example, vsp-router could be used to snoop a physical serial port and paired with socat to send the snooped data over UDP.
