@@ -167,7 +167,7 @@ impl Args {
             )
             .collect::<Vec<&str>>();
 
-        if duplicate_ids.len() > 0 {
+        if !duplicate_ids.is_empty() {
             Err(anyhow!(
                 "the following IDs were used more than once: {}",
                 duplicate_ids.join(", ")
@@ -187,7 +187,7 @@ impl FromStr for Virtual {
                 let path = Utf8PathBuf::from(s);
                 let id = path
                     .file_name()
-                    .ok_or(anyhow!("invalid path '{s}'"))?
+                    .ok_or_else(|| anyhow!("invalid path '{s}'"))?
                     .to_owned();
                 Ok(Self { id, path })
             }
@@ -226,7 +226,9 @@ impl FromStr for Route {
     type Err = AppError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (src, dst) = s.split_once(':').ok_or(anyhow!("invalid route '{s}'"))?;
+        let (src, dst) = s
+            .split_once(':')
+            .ok_or_else(|| anyhow!("invalid route '{s}'"))?;
         Ok(Self {
             src: src.to_string(),
             dst: dst.to_string(),

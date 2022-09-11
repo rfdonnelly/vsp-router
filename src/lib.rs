@@ -45,7 +45,7 @@ pub fn create_virtual_serial_port<P>(path: P) -> Result<(SerialStream, PtyLink)>
 where
     P: AsRef<Utf8Path>,
 {
-    let (manager, subordinate) = SerialStream::pair().map_err(|src| Error::Serial(src))?;
+    let (manager, subordinate) = SerialStream::pair().map_err(Error::Serial)?;
     let link = PtyLink::new(subordinate, path)?;
 
     Ok((manager, link))
@@ -55,16 +55,15 @@ pub fn open_physical_serial_port<P>(path: P, baud_rate: u32) -> Result<SerialStr
 where
     P: AsRef<Utf8Path>,
 {
-    Ok(tokio_serial::new(path.as_ref().as_str(), baud_rate)
+    tokio_serial::new(path.as_ref().as_str(), baud_rate)
         .open_native_async()
-        .map_err(|src| Error::Serial(src))?)
+        .map_err(Error::Serial)
 }
 
 impl PtyLink {
     fn new<P: AsRef<Utf8Path>>(subordinate: SerialStream, path: P) -> Result<Self> {
         let link = path.as_ref().to_path_buf();
-        unix::fs::symlink(&subordinate.name().unwrap(), link.as_std_path())
-            .map_err(|src| Error::Link(src))?;
+        unix::fs::symlink(&subordinate.name().unwrap(), link.as_std_path()).map_err(Error::Link)?;
 
         Ok(PtyLink {
             _subordinate: subordinate,
@@ -73,17 +72,17 @@ impl PtyLink {
     }
 
     pub fn link(&self) -> &Utf8Path {
-        &self.link.as_path()
+        self.link.as_path()
     }
 
     pub fn id(&self) -> &str {
-        &self.link.as_str()
+        self.link.as_str()
     }
 }
 
 impl Drop for PtyLink {
     fn drop(&mut self) {
-        if let Err(_) = fs::remove_file(&self.link) {
+        if fs::remove_file(&self.link).is_err() {
             eprintln!("error: could not delete {}", self.link);
         }
     }
@@ -103,16 +102,16 @@ where
     loop {
         tokio::select! {
             next = sources.next() => {
-                let (src_id, result) = next.ok_or_else(|| Error::Closed)?;
+                let (src_id, result) = next.ok_or(Error::Closed)?;
                 if let Some(dst_ids) = routes.get(&src_id) {
-                    let bytes = result.map_err(|src| Error::Read(src))?;
+                    let bytes = result.map_err(Error::Read)?;
                     info!(?src_id, ?dst_ids, ?bytes, "read");
                     for dst_id in dst_ids {
                         // This unwrap is OK as long as we validate all route IDs exist first
                         // Route IDs are validated in Args::check_route_ids()
                         let dst = sinks.get_mut(dst_id).unwrap();
                         let mut buf = bytes.clone();
-                        dst.write_all_buf(&mut buf).await.map_err(|src| Error::Write(src))?;
+                        dst.write_all_buf(&mut buf).await.map_err(Error::Write)?;
                         info!(?dst_id, ?bytes, "wrote");
                     }
                 }
