@@ -1,7 +1,14 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use thiserror::Error;
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
+use tokio_serial::SerialPortBuilderExt;
 use tokio_serial::{SerialPort, SerialStream};
+use tokio_stream::{StreamExt, StreamMap};
+use tokio_util::io::ReaderStream;
+use tokio_util::sync::CancellationToken;
+use tracing::{error, info};
 
+use std::collections::HashMap;
 use std::fs;
 use std::os::unix;
 
@@ -12,6 +19,15 @@ pub enum Error {
 
     #[error("serial error")]
     Serial(#[source] tokio_serial::Error),
+
+    #[error("stream closed")]
+    Closed,
+
+    #[error("read error")]
+    Read(#[source] std::io::Error),
+
+    #[error("write error")]
+    Write(#[source] std::io::Error),
 }
 
 pub struct PtyLink {
@@ -33,6 +49,15 @@ where
     let link = PtyLink::new(subordinate, path)?;
 
     Ok((manager, link))
+}
+
+pub fn open_physical_serial_port<P>(path: P, baud_rate: u32) -> Result<SerialStream>
+where
+    P: AsRef<Utf8Path>,
+{
+    Ok(tokio_serial::new(path.as_ref().as_str(), baud_rate)
+        .open_native_async()
+        .map_err(|src| Error::Serial(src))?)
 }
 
 impl PtyLink {
@@ -60,6 +85,41 @@ impl Drop for PtyLink {
     fn drop(&mut self) {
         if let Err(_) = fs::remove_file(&self.link) {
             eprintln!("error: could not delete {}", self.link);
+        }
+    }
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn transfer<R, W>(
+    mut sources: StreamMap<String, ReaderStream<R>>,
+    mut sinks: HashMap<String, W>,
+    routes: HashMap<String, Vec<String>>,
+    shutdown_token: CancellationToken,
+) -> Result<()>
+where
+    R: AsyncRead + Unpin,
+    W: AsyncWrite + Unpin,
+{
+    loop {
+        tokio::select! {
+            next = sources.next() => {
+                let (src_id, result) = next.ok_or_else(|| Error::Closed)?;
+                if let Some(dst_ids) = routes.get(&src_id) {
+                    let bytes = result.map_err(|src| Error::Read(src))?;
+                    info!(?src_id, ?dst_ids, ?bytes, "read");
+                    for dst_id in dst_ids {
+                        // This unwrap is OK as long as we validate all route IDs exist first
+                        // Route IDs are validated in Args::check_route_ids()
+                        let dst = sinks.get_mut(dst_id).unwrap();
+                        let mut buf = bytes.clone();
+                        dst.write_all_buf(&mut buf).await.map_err(|src| Error::Write(src))?;
+                        info!(?dst_id, ?bytes, "wrote");
+                    }
+                }
+            }
+            _ = shutdown_token.cancelled() => {
+                return Ok(());
+            }
         }
     }
 }

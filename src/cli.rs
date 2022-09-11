@@ -116,7 +116,8 @@ impl Args {
     }
 
     fn check_route_ids(&self) -> AppResult<()> {
-        let ids = self.virtuals
+        let ids = self
+            .virtuals
             .iter()
             .map(|virtual_| virtual_.id.as_str())
             .chain(self.physicals.iter().map(|physical| physical.id.as_str()))
@@ -124,10 +125,20 @@ impl Args {
 
         for route in &self.routes {
             if !ids.contains(&route.src.as_str()) {
-                Err(anyhow!("the source ID '{}' in route '{}:{}' was not found", route.src, route.src, route.dst))?;
+                Err(anyhow!(
+                    "the source ID '{}' in route '{}:{}' was not found",
+                    route.src,
+                    route.src,
+                    route.dst
+                ))?;
             }
             if !ids.contains(&route.dst.as_str()) {
-                Err(anyhow!("the destination ID '{}' in route '{}:{}' was not found", route.dst, route.src, route.dst))?;
+                Err(anyhow!(
+                    "the destination ID '{}' in route '{}:{}' was not found",
+                    route.dst,
+                    route.src,
+                    route.dst
+                ))?;
             }
         }
 
@@ -135,7 +146,8 @@ impl Args {
     }
 
     fn check_duplicate_ids(&self) -> AppResult<()> {
-        let duplicate_ids = self.virtuals
+        let duplicate_ids = self
+            .virtuals
             .iter()
             .map(|virtual_| &virtual_.id)
             .chain(self.physicals.iter().map(|physical| &physical.id))
@@ -144,17 +156,22 @@ impl Args {
                 map
             })
             .iter()
-            .filter_map(|(id, &count)| {
-                if count > 1 {
-                    Some(id.as_str())
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(id, &count)| {
+                    if count > 1 {
+                        Some(id.as_str())
+                    } else {
+                        None
+                    }
+                },
+            )
             .collect::<Vec<&str>>();
 
         if duplicate_ids.len() > 0 {
-            Err(anyhow!("the following IDs were used more than once: {}", duplicate_ids.join(", ")))
+            Err(anyhow!(
+                "the following IDs were used more than once: {}",
+                duplicate_ids.join(", ")
+            ))
         } else {
             Ok(())
         }
