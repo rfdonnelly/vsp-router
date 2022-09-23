@@ -235,3 +235,14 @@ impl FromStr for Route {
         })
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn debug_assert() {
+        use clap::CommandFactory;
+        Args::command().debug_assert();
+    }
+}
