@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 #[derive(Parser)]
-#[clap(author, version, about, after_help = CLAP_AFTER_HELP)]
+#[command(author, version, about, after_help = CLAP_AFTER_HELP)]
 pub(crate) struct Args {
     /// Create a virtual serial port.
     ///
@@ -27,7 +27,7 @@ pub(crate) struct Args {
     /// --virtual 0:dev/ttyUSB0
     ///
     ///     The path is '/dev/ttyUSB0' and the ID is '0'.
-    #[clap(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
+    #[arg(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
     pub(crate) virtuals: Vec<Virtual>,
 
     /// Open a physical serial port.
@@ -52,7 +52,7 @@ pub(crate) struct Args {
     /// --physical 1:/dev/ttyUSB0,115200
     ///
     ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 115200.
-    #[clap(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
+    #[arg(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
     pub(crate) physicals: Vec<Physical>,
 
     /// Create a route between a source port and a destination port.
@@ -66,7 +66,7 @@ pub(crate) struct Args {
     /// --virtual 0:1
     ///
     ///     The source ID is '0' and the destination ID is '1'.
-    #[clap(long = "route", id = "ROUTE", verbatim_doc_comment)]
+    #[arg(long = "route", id = "ROUTE", verbatim_doc_comment)]
     pub(crate) routes: Vec<Route>,
 }
 
