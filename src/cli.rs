@@ -77,7 +77,7 @@ Examples:
 
     Data sent from virtual serial port 0 is sent to the physical serial port but not to virtual
     serial port 1.  Similarly, data sent from virtual serial port 1 is sent to the physical serial
-    port but not to virtual serial port 0.  Data received fromt the physical serial port is sent to
+    port but not to virtual serial port 0.  Data received from the physical serial port is sent to
     both virtual serial ports.
 
     vsp-router \\
