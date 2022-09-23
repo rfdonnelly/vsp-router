@@ -71,7 +71,7 @@ pub(crate) struct Args {
 }
 
 const CLAP_AFTER_HELP: &str = "
-EXAMPLES:
+Examples:
 
     Share a physical serial port with two virtual serial ports.
 
