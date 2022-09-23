@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 #[derive(Parser)]
 #[command(author, version, about, after_help = CLAP_AFTER_HELP)]
-pub(crate) struct Args {
+pub(crate) struct Cli {
     /// Create a virtual serial port.
     ///
     /// The argument takes the following form: '[<id>:]<path>'
@@ -109,7 +109,7 @@ pub(crate) struct Route {
     pub(crate) dst: String,
 }
 
-impl Args {
+impl Cli {
     pub(crate) fn validate(&self) -> AppResult<()> {
         self.check_duplicate_ids()?;
         self.check_route_ids()
@@ -243,6 +243,6 @@ mod test {
     #[test]
     fn debug_assert() {
         use clap::CommandFactory;
-        Args::command().debug_assert();
+        Cli::command().debug_assert();
     }
 }
