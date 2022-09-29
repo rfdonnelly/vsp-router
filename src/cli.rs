@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 #[derive(Parser)]
-#[clap(author, version, about, after_help = CLAP_AFTER_HELP)]
-pub(crate) struct Args {
+#[command(author, version, about, after_help = CLAP_AFTER_HELP)]
+pub(crate) struct Cli {
     /// Create a virtual serial port.
     ///
     /// The argument takes the following form: '[<id>:]<path>'
@@ -27,7 +27,7 @@ pub(crate) struct Args {
     /// --virtual 0:dev/ttyUSB0
     ///
     ///     The path is '/dev/ttyUSB0' and the ID is '0'.
-    #[clap(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
+    #[arg(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
     pub(crate) virtuals: Vec<Virtual>,
 
     /// Open a physical serial port.
@@ -52,7 +52,7 @@ pub(crate) struct Args {
     /// --physical 1:/dev/ttyUSB0,115200
     ///
     ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 115200.
-    #[clap(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
+    #[arg(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
     pub(crate) physicals: Vec<Physical>,
 
     /// Create a route between a source port and a destination port.
@@ -66,18 +66,18 @@ pub(crate) struct Args {
     /// --virtual 0:1
     ///
     ///     The source ID is '0' and the destination ID is '1'.
-    #[clap(long = "route", id = "ROUTE", verbatim_doc_comment)]
+    #[arg(long = "route", id = "ROUTE", verbatim_doc_comment)]
     pub(crate) routes: Vec<Route>,
 }
 
 const CLAP_AFTER_HELP: &str = "
-EXAMPLES:
+Examples:
 
     Share a physical serial port with two virtual serial ports.
 
     Data sent from virtual serial port 0 is sent to the physical serial port but not to virtual
     serial port 1.  Similarly, data sent from virtual serial port 1 is sent to the physical serial
-    port but not to virtual serial port 0.  Data received fromt the physical serial port is sent to
+    port but not to virtual serial port 0.  Data received from the physical serial port is sent to
     both virtual serial ports.
 
     vsp-router \\
@@ -109,7 +109,7 @@ pub(crate) struct Route {
     pub(crate) dst: String,
 }
 
-impl Args {
+impl Cli {
     pub(crate) fn validate(&self) -> AppResult<()> {
         self.check_duplicate_ids()?;
         self.check_route_ids()
@@ -233,5 +233,16 @@ impl FromStr for Route {
             src: src.to_string(),
             dst: dst.to_string(),
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn debug_assert() {
+        use clap::CommandFactory;
+        Cli::command().debug_assert();
     }
 }

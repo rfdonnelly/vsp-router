@@ -1,6 +1,6 @@
 mod cli;
 
-use crate::cli::Args;
+use crate::cli::Cli;
 
 use vsp_router::{create_virtual_serial_port, open_physical_serial_port, transfer};
 
@@ -19,7 +19,7 @@ type AppResult<T> = anyhow::Result<T>;
 async fn main() -> AppResult<()> {
     tracing_subscriber::fmt::init();
 
-    let args = Args::parse();
+    let args = Cli::parse();
     args.validate()?;
     // TODO: Warn on non-routed sources
 
