@@ -1,0 +1,85 @@
+Create virtual serial ports, connect them to physical serial ports, and create routes between them all.
+
+Usage: vsp-router [OPTIONS]
+
+Options:
+      --virtual <VIRTUAL>
+          Create a virtual serial port.
+          
+          The argument takes the following form: '[<id>:]<path>'
+          
+          If no ID is specified, the ID is set to the basename of the path.
+          
+          Can use multiple times to create multiple virtual serial ports.
+          
+          Examples:
+          
+          --virtual path/to/file
+          
+              The path is 'path/to/file' and the ID is 'file'.
+          
+          --virtual 0:dev/ttyUSB0
+          
+              The path is '/dev/ttyUSB0' and the ID is '0'.
+
+      --physical <PHYSICAL>
+          Open a physical serial port.
+          
+          The argument takes the following form: '[<id>:]<path>[,<baud-rate>]'
+          
+          If ID is not specified, the ID is set to the basename of the path. If baud rate is not
+          specificed, the baud rate defaults to 9600.
+          
+          Can use multiple times to attached multiple physical serial ports.
+          
+          Examples:
+          
+          --physical /dev/ttyUSB0
+          
+              The path is '/dev/ttyUSB0', the ID is 'ttyUSB0', and the baud rate is 9600.
+          
+          --physical 1:/dev/ttyUSB0
+          
+              The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 9600.
+          
+          --physical 1:/dev/ttyUSB0,115200
+          
+              The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 115200.
+
+      --route <ROUTE>
+          Create a route between a source port and a destination port.
+          
+          The argument takes the following form: '<src-id>:<dst-id>'
+          
+          Can use multiple times to create multiple routes.
+          
+          Examples:
+          
+          --virtual 0:1
+          
+              The source ID is '0' and the destination ID is '1'.
+
+  -h, --help
+          Print help information (use `-h` for a summary)
+
+  -V, --version
+          Print version information
+
+
+Examples:
+
+    Share a physical serial port with two virtual serial ports.
+
+    Data sent from virtual serial port 0 is sent to the physical serial port but not to virtual
+    serial port 1.  Similarly, data sent from virtual serial port 1 is sent to the physical serial
+    port but not to virtual serial port 0.  Data received from the physical serial port is sent to
+    both virtual serial ports.
+
+    vsp-router /
+        --virtual 0 /
+        --virtual 1 /
+        --physical 2:/dev/ttyUSB0,115200 /
+        --route 0:2 /
+        --route 1:2 /
+        --route 2:0 /
+        --route 2:1
