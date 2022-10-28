@@ -1,12 +1,12 @@
 use vsp_router::{create_virtual_serial_port, transfer};
 
 use bytes::{Bytes, BytesMut};
+use futures_util::future::{AbortHandle, Abortable};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::timeout;
 use tokio_serial::SerialPortBuilderExt;
 use tokio_stream::StreamMap;
 use tokio_util::io::ReaderStream;
-use tokio_util::sync::CancellationToken;
 
 use std::collections::HashMap;
 use std::time::Duration;
@@ -52,13 +52,13 @@ async fn virtual_routes() {
     .into_iter()
     .collect();
 
-    let shutdown_token = CancellationToken::new();
-    let shutdown_token_clone = shutdown_token.clone();
+    let (abort_handle, abort_registration) = AbortHandle::new_pair();
 
     let join_handle = tokio::spawn(async move {
-        transfer(sources, sinks, routes, shutdown_token_clone)
+        Abortable::new(transfer(sources, sinks, routes), abort_registration)
             .await
-            .unwrap()
+            .map(|transfer_result| transfer_result.unwrap())
+            .ok()
     });
 
     timeout(Duration::from_secs(1), async move {
@@ -88,6 +88,6 @@ async fn virtual_routes() {
     .await
     .expect("test took longer than expected");
 
-    shutdown_token.cancel();
+    abort_handle.abort();
     join_handle.await.unwrap();
 }
