@@ -5,9 +5,9 @@ use crate::cli::Cli;
 use vsp_router::{create_virtual_serial_port, open_physical_serial_port, transfer};
 
 use clap::Parser;
+use futures_util::future::{AbortHandle, Abortable, Aborted};
 use tokio_stream::StreamMap;
 use tokio_util::io::ReaderStream;
-use tokio_util::sync::CancellationToken;
 use tracing::{error, info};
 
 use std::collections::HashMap;
@@ -51,8 +51,7 @@ async fn main() -> AppResult<()> {
     }
     info!(?routes);
 
-    let shutdown_token = CancellationToken::new();
-    let shutdown_token_clone = shutdown_token.clone();
+    let (abort_handle, abort_registration) = AbortHandle::new_pair();
 
     tokio::spawn(async move {
         match tokio::signal::ctrl_c().await {
@@ -60,11 +59,15 @@ async fn main() -> AppResult<()> {
             Err(e) => error!(?e, "unable to listen for shutdown signal"),
         }
 
-        shutdown_token.cancel();
+        abort_handle.abort();
         info!("waiting for graceful shutdown");
     });
 
-    transfer(sources, sinks, routes, shutdown_token_clone).await?;
+    let abort_result = Abortable::new(transfer(sources, sinks, routes), abort_registration).await;
+    match abort_result {
+        Ok(transfer_result) => transfer_result?,
+        Err(Aborted) => {}
+    }
 
     Ok(())
 }
