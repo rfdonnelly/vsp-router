@@ -9,6 +9,12 @@ vsp-router was created to connect two terminal emulators to the same physical RS
 
 [![asciicast](https://asciinema.org/a/519137.svg)](https://asciinema.org/a/519137)
 
+## Supported Operating Systems
+
+* Linux: Yes, tested on Red Hat Enterprise Linux 8
+* macOS: Should work but untested
+* Windows: No
+
 ## Use Cases
 
 Multiplex two virutal serial ports to a single physical serial port.
