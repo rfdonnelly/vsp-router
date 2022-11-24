@@ -44,10 +44,7 @@ async fn main() -> AppResult<()> {
 
     let mut routes: HashMap<String, Vec<String>> = HashMap::new();
     for route in args.routes {
-        routes
-            .entry(route.src)
-            .or_insert(Vec::new())
-            .push(route.dst);
+        routes.entry(route.src).or_default().push(route.dst);
     }
     info!(?routes);
 
