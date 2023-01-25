@@ -62,7 +62,7 @@ where
 impl PtyLink {
     fn new<P: AsRef<Utf8Path>>(subordinate: SerialStream, path: P) -> Result<Self> {
         let link = path.as_ref().to_path_buf();
-        unix::fs::symlink(&subordinate.name().unwrap(), link.as_std_path()).map_err(Error::Link)?;
+        unix::fs::symlink(subordinate.name().unwrap(), link.as_std_path()).map_err(Error::Link)?;
 
         Ok(PtyLink {
             _subordinate: subordinate,
