@@ -70,8 +70,9 @@ pub(crate) struct Cli {
     pub(crate) routes: Vec<Route>,
 }
 
-const CLAP_AFTER_HELP: &str = "
-Examples:
+const CLAP_AFTER_HELP: &str = color_print::cstr!(
+    "
+<bold><underline>Examples:</underline></bold>
 
     Share a physical serial port with two virtual serial ports.
 
@@ -88,7 +89,8 @@ Examples:
         --route 1:2 \\
         --route 2:0 \\
         --route 2:1
-";
+"
+);
 
 #[derive(Clone, Debug)]
 pub(crate) struct Virtual {
