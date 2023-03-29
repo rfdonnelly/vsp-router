@@ -12,7 +12,7 @@ vsp-router was created to connect two terminal emulators to the same physical RS
 ## Supported Operating Systems
 
 * Linux: Yes, tested on Red Hat Enterprise Linux 8
-* macOS: Should work but untested
+* macOS: Yes, tested on macOS Ventura 13.1
 * Windows: No
 
 ## Use Cases
