@@ -34,8 +34,8 @@ pub(crate) struct Cli {
     ///
     /// The argument takes the following form: '[<id>:]<path>[,<baud-rate>]'
     ///
-    /// If ID is not specified, the ID is set to the basename of the path. If baud rate is not
-    /// specificed, the baud rate defaults to 9600.
+    /// If ID is not specified, the ID is set to the basename of the path. If baud rate is not specified,
+    /// the baud rate defaults to 9600.
     ///
     /// Can use multiple times to attached multiple physical serial ports.
     ///
