@@ -1,6 +1,6 @@
 [package]
 name = "vsp-router"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 description = "Create virtual serial ports, connect them to physical serial ports, and create routes between them all."
 authors = ["Rob Donnelly"]
