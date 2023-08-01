@@ -1,6 +1,6 @@
 = Release Process
 
-This project uses https://opensource.axo.dev/cargo-dist/book/[cargo-dist].
+This project uses https://opensource.axo.dev/cargo-dist/[cargo-dist].
 Creating a release is as simple as creating and pushing a release tag.
 
 == Define Version
