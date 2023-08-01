@@ -13,7 +13,9 @@ vsp-router was created to connect two terminal emulators to the same physical RS
 
 * Linux: Yes, tested on Red Hat Enterprise Linux 8
 * macOS: Yes, tested on macOS Ventura 13.1
-* Windows: No
+* Windows: Yes*, tested on Windows 10
+
+*The Windows version does support creation of virtual serial ports.  A third-party tool like https://com0com.sourceforge.net[com0com] can be used instead.
 
 ## Use Cases
 

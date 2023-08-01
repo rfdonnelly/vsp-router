@@ -6,6 +6,9 @@ Options:
       --virtual <VIRTUAL>
           Create a virtual serial port.
           
+          NOTE: This option is only applicable on POSIX platforms.  This option is
+          not applicable on Windows.
+          
           The argument takes the following form: '[<id>:]<path>'
           
           If no ID is specified, the ID is set to the basename of the path.
