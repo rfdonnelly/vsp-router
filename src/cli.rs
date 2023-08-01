@@ -63,7 +63,7 @@ pub(crate) struct Cli {
     ///
     /// Examples:
     ///
-    /// --virtual 0:1
+    /// --route 0:1
     ///
     ///     The source ID is '0' and the destination ID is '1'.
     #[arg(long = "route", id = "ROUTE", verbatim_doc_comment)]
