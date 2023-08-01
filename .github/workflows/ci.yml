@@ -5,7 +5,14 @@ name: ci
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-20.04
+        - os: macos-11
+        - os: windows-2019
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1

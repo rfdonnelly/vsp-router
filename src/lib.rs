@@ -1,14 +1,18 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use thiserror::Error;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
+#[cfg(unix)]
+use tokio_serial::SerialPort;
 use tokio_serial::SerialPortBuilderExt;
-use tokio_serial::{SerialPort, SerialStream};
+use tokio_serial::SerialStream;
 use tokio_stream::{StreamExt, StreamMap};
 use tokio_util::io::ReaderStream;
 use tracing::{error, info};
 
 use std::collections::HashMap;
 use std::fs;
+
+#[cfg(unix)]
 use std::os::unix;
 
 #[derive(Error, Debug)]
@@ -40,6 +44,7 @@ pub struct PtyLink {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[cfg(unix)]
 pub fn create_virtual_serial_port<P>(path: P) -> Result<(SerialStream, PtyLink)>
 where
     P: AsRef<Utf8Path>,
@@ -59,6 +64,7 @@ where
         .map_err(Error::Serial)
 }
 
+#[cfg(unix)]
 impl PtyLink {
     fn new<P: AsRef<Utf8Path>>(subordinate: SerialStream, path: P) -> Result<Self> {
         let link = path.as_ref().to_path_buf();

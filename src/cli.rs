@@ -12,6 +12,9 @@ use std::str::FromStr;
 pub(crate) struct Cli {
     /// Create a virtual serial port.
     ///
+    /// NOTE: This option is only applicable on POSIX platforms.  This option is
+    /// not applicable on Windows.
+    ///
     /// The argument takes the following form: '[<id>:]<path>'
     ///
     /// If no ID is specified, the ID is set to the basename of the path.
@@ -113,17 +116,38 @@ pub(crate) struct Route {
 
 impl Cli {
     pub(crate) fn validate(&self) -> AppResult<()> {
+        self.check_windows_virtuals()?;
         self.check_duplicate_ids()?;
         self.check_route_ids()
     }
 
+    fn check_windows_virtuals(&self) -> AppResult<()> {
+        #[cfg(not(unix))]
+        if !self.virtuals.is_empty() {
+            Err(anyhow!("the --virtual option is not available on Windows"))
+        } else {
+            Ok(())
+        }
+
+        #[cfg(unix)]
+        Ok(())
+    }
+
+    fn ids(&self) -> impl Iterator<Item = &str> {
+        #[cfg(unix)]
+        let virtual_ids = self.virtuals.iter().map(|virtual_| virtual_.id.as_str());
+        #[cfg(not(unix))]
+        let virtual_ids = {
+            let virtual_ids: &[String] = &[];
+            virtual_ids.iter().map(|virtual_id| virtual_id.as_str())
+        };
+        let physical_ids = self.physicals.iter().map(|physical| physical.id.as_str());
+
+        virtual_ids.chain(physical_ids)
+    }
+
     fn check_route_ids(&self) -> AppResult<()> {
-        let ids = self
-            .virtuals
-            .iter()
-            .map(|virtual_| virtual_.id.as_str())
-            .chain(self.physicals.iter().map(|physical| physical.id.as_str()))
-            .collect::<Vec<&str>>();
+        let ids = self.ids().collect::<Vec<&str>>();
 
         for route in &self.routes {
             if !ids.contains(&route.src.as_str()) {
@@ -149,24 +173,13 @@ impl Cli {
 
     fn check_duplicate_ids(&self) -> AppResult<()> {
         let duplicate_ids = self
-            .virtuals
-            .iter()
-            .map(|virtual_| &virtual_.id)
-            .chain(self.physicals.iter().map(|physical| &physical.id))
+            .ids()
             .fold(HashMap::new(), |mut map, id| {
                 *map.entry(id).or_insert(0) += 1;
                 map
             })
             .iter()
-            .filter_map(
-                |(id, &count)| {
-                    if count > 1 {
-                        Some(id.as_str())
-                    } else {
-                        None
-                    }
-                },
-            )
+            .filter_map(|(&id, &count)| if count > 1 { Some(id) } else { None })
             .collect::<Vec<&str>>();
 
         if !duplicate_ids.is_empty() {

@@ -2,7 +2,10 @@ mod cli;
 
 use crate::cli::Cli;
 
-use vsp_router::{create_virtual_serial_port, open_physical_serial_port, transfer};
+#[cfg(unix)]
+use vsp_router::create_virtual_serial_port;
+
+use vsp_router::{open_physical_serial_port, transfer};
 
 use clap::Parser;
 use futures_util::future::{AbortHandle, Abortable, Aborted};
@@ -25,8 +28,10 @@ async fn main() -> AppResult<()> {
 
     let mut sources = StreamMap::new();
     let mut sinks = HashMap::new();
+    #[cfg(unix)]
     let mut links = Vec::new();
 
+    #[cfg(unix)]
     for virtual_ in args.virtuals {
         let (port, link) = create_virtual_serial_port(&virtual_.path)?;
         let (reader, writer) = tokio::io::split(port);
