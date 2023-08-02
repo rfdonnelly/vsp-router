@@ -1,29 +1,22 @@
 = Release Process
 
-This project uses https://opensource.axo.dev/cargo-dist/[cargo-dist].
-Creating a release is as simple as creating and pushing a release tag.
+This project uses https://opensource.axo.dev/cargo-dist/[cargo-dist] and https://github.com/crate-ci/cargo-release[cargo-release] to simplify cutting new releases.
 
-== Define Version
+== Update the Changelog
 
- version=x.y.z
-
-== Set Version
-
-NOTE: This requires `cargo-edit`.
-
- cargo set-version $version
-
-== Commit and Push
-
- git add Cargo.toml Cargo.lock
+ vim CHANGELOG.md
+ git add CHANGELOG
  git commit
  git push
 
-== Tag and Push
+== Create a Release
 
- git tag v$version
- git push origin v$version
+ cargo release <version>
 
-== Relax
+E.g.
 
-Sit back a relax while `cargo-dist` automatically creates a GitHub Release and releaes binaries for each platform.
+ cargo release 1.0.1
+
+== Sit Back and Relax
+
+Sit back and relax while `cargo-dist` automatically creates a GitHub Release and releases binaries for each platform.
