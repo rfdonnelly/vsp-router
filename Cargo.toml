@@ -6,7 +6,7 @@ description = "Create virtual serial ports, connect them to physical serial port
 authors = ["Rob Donnelly"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rfdonnelly/vsp-router"
-keywords = ["serial", "socat", "ttybus", "virtual", "router"]
+keywords = ["serial", "socat", "ttybus", "virtual", "router", "com0com", "hub4com"]
 categories = ["command-line-utilities"]
 
 [profile.release]
