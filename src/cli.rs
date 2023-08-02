@@ -23,39 +23,39 @@ pub(crate) struct Cli {
     ///
     /// Examples:
     ///
-    /// --virtual path/to/file
+    /// --create path/to/file
     ///
     ///     The path is 'path/to/file' and the ID is 'file'.
     ///
-    /// --virtual 0:dev/ttyUSB0
+    /// --create 0:dev/ttyUSB0
     ///
     ///     The path is '/dev/ttyUSB0' and the ID is '0'.
-    #[arg(long = "virtual", id = "VIRTUAL", verbatim_doc_comment)]
+    #[arg(long = "create", id = "CREATE", verbatim_doc_comment)]
     pub(crate) virtuals: Vec<Virtual>,
 
-    /// Open a physical serial port.
+    /// Attach to an existing serial port.
     ///
     /// The argument takes the following form: '[<id>:]<path>[,<baud-rate>]'
     ///
     /// If ID is not specified, the ID is set to the basename of the path. If baud rate is not specified,
     /// the baud rate defaults to 9600.
     ///
-    /// Can use multiple times to attached multiple physical serial ports.
+    /// Can use multiple times to attach multiple serial ports.
     ///
     /// Examples:
     ///
-    /// --physical /dev/ttyUSB0
+    /// --attach /dev/ttyUSB0
     ///
     ///     The path is '/dev/ttyUSB0', the ID is 'ttyUSB0', and the baud rate is 9600.
     ///
-    /// --physical 1:/dev/ttyUSB0
+    /// --attach 1:/dev/ttyUSB0
     ///
     ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 9600.
     ///
-    /// --physical 1:/dev/ttyUSB0,115200
+    /// --attach 1:/dev/ttyUSB0,115200
     ///
     ///     The path is '/dev/ttyUSB0', the ID is '1', and the baud rate is 115200.
-    #[arg(long = "physical", id = "PHYSICAL", verbatim_doc_comment)]
+    #[arg(long = "attach", id = "ATTACH", verbatim_doc_comment)]
     pub(crate) physicals: Vec<Physical>,
 
     /// Create a route between a source port and a destination port.
@@ -85,9 +85,9 @@ const CLAP_AFTER_HELP: &str = color_print::cstr!(
     both virtual serial ports.
 
     vsp-router \\
-        --virtual 0 \\
-        --virtual 1 \\
-        --physical 2:/dev/ttyUSB0,115200 \\
+        --create 0 \\
+        --create 1 \\
+        --attach 2:/dev/ttyUSB0,115200 \\
         --route 0:2 \\
         --route 1:2 \\
         --route 2:0 \\

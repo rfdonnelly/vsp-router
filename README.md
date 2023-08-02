@@ -5,7 +5,7 @@
 
 Create virtual serial ports, connect them to physical serial ports, and create routes between them all.
 
-vsp-router was created to connect two terminal emulators to the same physical RS-232 [serial console](https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html).
+Vsp-router was created to connect two terminal emulators to the same physical RS-232 [serial console](https://tldp.org/HOWTO/Remote-Serial-Console-HOWTO/intro-why.html).
 
 [![asciicast](https://asciinema.org/a/519137.svg)](https://asciinema.org/a/519137)
 
@@ -23,9 +23,9 @@ Multiplex two virutal serial ports to a single physical serial port.
 
 ```sh
 vsp-router \
-    --virtual 0 \
-    --virtual 1 \
-    --physical 2:/dev/ttyUSB0 \
+    --create 0 \
+    --create 1 \
+    --attach 2:/dev/ttyUSB0 \
     --route 0:2 \
     --route 1:2 \
     --route 2:0 \
@@ -36,9 +36,9 @@ Multiplex two virutal serial ports to a third virtual serial port.
 
 ```sh
 vsp-router \
-    --virtual 0 \
-    --virtual 1 \
-    --virtual 2 \
+    --create 0 \
+    --create 1 \
+    --create 2 \
     --route 0:2 \
     --route 1:2 \
     --route 2:0 \
@@ -51,9 +51,9 @@ In terminal A
 
 ```sh
 cargo run -- \
-    --virtual 0 \
-    --virtual 1 \
-    --virtual 2 \
+    --create 0 \
+    --create 1 \
+    --create 2 \
     --route 0:2 \
     --route 1:2 \
     --route 2:0 \
@@ -105,9 +105,9 @@ vsp-router
 
 ```sh
 vsp-router \
-    --virtual 0 \
-    --virtual 1 \
-    --virtual 2 \
+    --create 0 \
+    --create 1 \
+    --create 2 \
     --route 0:1 \
     --route 0:2 \
     --route 1:0 \
