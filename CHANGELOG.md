@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No unrelease changes.
 
+## Version 1.0.1 (2023-08-01)
+
+[GitHub Release page](https://github.com/rfdonnelly/vsp-router/releases/tag/v1.0.1)
+
+### Fixed
+
+- Fixed typo in README
+
 ## Version 1.0.0 (2023-08-01)
 
 [GitHub Release page](https://github.com/rfdonnelly/vsp-router/releases/tag/v1.0.0)
