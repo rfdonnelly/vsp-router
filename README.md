@@ -19,7 +19,7 @@ Vsp-router was created to connect two terminal emulators to the same physical RS
 
 ## Use Cases
 
-Multiplex two virutal serial ports to a single physical serial port.
+Multiplex two virtual serial ports to a single physical serial port.
 
 ```sh
 vsp-router \
@@ -32,7 +32,7 @@ vsp-router \
     --route 2:1
 ```
 
-Multiplex two virutal serial ports to a third virtual serial port.
+Multiplex two virtual serial ports to a third virtual serial port.
 
 ```sh
 vsp-router \
