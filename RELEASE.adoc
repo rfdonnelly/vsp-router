@@ -9,13 +9,34 @@ This project uses https://opensource.axo.dev/cargo-dist/[cargo-dist] and https:/
  git commit
  git push
 
-== Create a Release
+== Dryrun the Release
 
+ cargo dist build
+ cargo dist plan
  cargo release <version>
 
 E.g.
 
  cargo release 1.0.1
+
+== Execute the Release
+
+ cargo release <version> --execute
+
+E.g.
+
+ cargo release 1.0.1 --execute
+
+This will:
+
+* Update version in `Cargo.toml` and `Cargo.lock` and commit them
+* Publish the release to crates.io
+* Creates a tag and pushes it
+
+Pushing the tag then kicks off cargo-dist which:
+
+* Builds release artifacts
+* Creates a GitHub Release
 
 == Sit Back and Relax
 
