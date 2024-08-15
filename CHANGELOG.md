@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No unrelease changes.
 
-## Version 1.0.2 (2024-08-15)
+## Version 1.0.3 (2024-08-15)
 
-[GitHub Release page](https://github.com/rfdonnelly/vsp-router/releases/tag/v1.0.1)
+[GitHub Release page](https://github.com/rfdonnelly/vsp-router/releases/tag/v1.0.3)
 
 ### Fixed
 
@@ -20,6 +20,8 @@ No unrelease changes.
   Previous to this fix, vsp-router would block if a virtual serial port buffer became full.
   Now, vsp-router drops the data.
   See [#16](https://github.com/rfdonnelly/vsp-router/pull/16) for more details.
+
+## Version 1.0.2 (YANKED)
 
 ## Version 1.0.1 (2023-08-01)
 
