@@ -5,7 +5,7 @@ This project uses https://opensource.axo.dev/cargo-dist/[cargo-dist] and https:/
 == Update the Changelog
 
  vim CHANGELOG.md
- git add CHANGELOG
+ git add CHANGELOG.md
  git commit
  git push
 
