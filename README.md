@@ -78,9 +78,17 @@ In terminal 2
 picocom 2
 ```
 
-Characters entered in terminal 0 will be sent to terminal 2 only.
-Characters entered in terminal 1 will be sent to terminal 2 only.
+Characters entered in terminal 0 will be sent to terminal 2 only.\
+Characters entered in terminal 1 will be sent to terminal 2 only.\
 Characters entered in terminal 2 will be sent to both terminals 0 and 1.
+
+## Connection to a Virtual Serial Port
+
+Virtual serial ports created by vsp-router behave a bit differently from physical serial ports:
+* You can connect to them using any baud rate. You are not forced to use the same baud rate as the physical serial port you are multiplexing.
+* When you don't read from them they accumulate data in a buffer. When this buffer becomes full new data will be discarded and a warning message will be shown in the logs. Any buffered data will get returned when you next read from them.
+
+To avoid reading stale data accumulated in the buffer when you want to read from the virtual serial port it is recommended to flush its input buffer before you first read from it. This can be done using `tcflush(fd, TCIFLUSH)` (or equivalent on your platform) on the file descriptor of the virtual serial port.
 
 ## Comparison to TTYBUS
 

@@ -1,16 +1,20 @@
+use bytes::{Buf, Bytes};
 use camino::{Utf8Path, Utf8PathBuf};
 use thiserror::Error;
-use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncWrite};
 #[cfg(unix)]
 use tokio_serial::SerialPort;
 use tokio_serial::SerialPortBuilderExt;
 use tokio_serial::SerialStream;
 use tokio_stream::{StreamExt, StreamMap};
 use tokio_util::io::ReaderStream;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 use std::collections::HashMap;
 use std::fs;
+use std::io::ErrorKind;
+use std::pin::Pin;
+use std::task::Poll::Ready;
 
 #[cfg(unix)]
 use std::os::unix;
@@ -108,15 +112,41 @@ where
             let bytes = result.map_err(Error::Read)?;
             info!(?src_id, ?dst_ids, ?bytes, "read");
             for dst_id in dst_ids {
-                // This unwrap is OK as long as we validate all route IDs exist first
-                // Route IDs are validated in Args::check_route_ids()
-                let dst = sinks.get_mut(dst_id).unwrap();
-                let mut buf = bytes.clone();
-                dst.write_all_buf(&mut buf).await.map_err(Error::Write)?;
-                info!(?dst_id, ?bytes, "wrote");
+                if let Some(dst) = sinks.get_mut(dst_id) {
+                    let mut buf = bytes.clone();
+                    if let Err(e) = write_non_blocking(dst, &mut buf).await {
+                        if let Error::Write(io_err) = &e {
+                            if io_err.kind() == ErrorKind::WouldBlock {
+                                warn!(?dst_id, ?bytes, "discarded");
+                            } else {
+                                error!(?dst_id, ?e, "write error");
+                            }
+                        }
+                    } else {
+                        info!(?dst_id, ?bytes, "wrote");
+                    }
+                }
             }
         }
     }
 
     Ok(())
+}
+
+async fn write_non_blocking<W: AsyncWrite + Unpin>(dst: &mut W, buf: &mut Bytes) -> Result<()> {
+    let waker = futures::task::noop_waker();
+    let mut cx = futures::task::Context::from_waker(&waker);
+
+    let pinned_dst = Pin::new(dst);
+    match pinned_dst.poll_write(&mut cx, buf) {
+        Ready(Ok(bytes_written)) => {
+            buf.advance(bytes_written);
+            Ok(())
+        }
+        Ready(Err(e)) => Err(Error::Write(e)),
+        _ => Err(Error::Write(std::io::Error::new(
+            ErrorKind::WouldBlock,
+            "Would block",
+        ))),
+    }
 }
