@@ -78,8 +78,8 @@ In terminal 2
 picocom 2
 ```
 
-Characters entered in terminal 0 will be sent to terminal 2 only.
-Characters entered in terminal 1 will be sent to terminal 2 only.
+Characters entered in terminal 0 will be sent to terminal 2 only.\
+Characters entered in terminal 1 will be sent to terminal 2 only.\
 Characters entered in terminal 2 will be sent to both terminals 0 and 1.
 
 ## Connection to a Virtual Serial Port
