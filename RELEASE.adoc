@@ -20,3 +20,7 @@ E.g.
 == Sit Back and Relax
 
 Sit back and relax while `cargo-dist` automatically creates a GitHub Release and releases binaries for each platform.
+
+== References
+
+See the https://github.com/axodotdev/cargo-dist/blob/main/book/src/workspaces/cargo-release-guide.md[cargo-dist cargo-release guide].
